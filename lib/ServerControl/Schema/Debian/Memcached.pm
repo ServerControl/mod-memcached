@@ -4,7 +4,7 @@
 # vim: set ts=3 sw=3 tw=0:
 # vim: set expandtab:
 
-package ServerControl::Schema::Debian::Memcachedd;
+package ServerControl::Schema::Debian::Memcached;
 
 use strict;
 use warnings;
