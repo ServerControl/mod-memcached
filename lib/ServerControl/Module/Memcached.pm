@@ -9,14 +9,14 @@ package ServerControl::Module::Memcached;
 use strict;
 use warnings;
 
+our $VERSION = '0.90';
+
 use ServerControl::Module;
 use ServerControl::Commons::Process;
 
 use base qw(ServerControl::Module);
 
-our $VERSION = '0.90';
-
-use Data::Dumper;
+__PACKAGE__->Implements( qw(ServerControl::Module::PidFile) );
 
 __PACKAGE__->Parameter(
    help  => { isa => 'bool', call => sub { __PACKAGE__->help; } },
@@ -70,26 +70,6 @@ sub start {
 
    spawn("$path/bin/memcached-$name -d -p $port -l $ip $max_mem_for_item -P $pid_file $large_memory $threads -b $backlog");
 }
-
-sub stop {
-   my ($class) = @_;
-
-   my ($name, $path) = ($class->get_name, $class->get_path);
-   my $pid_file = "$path/run/$name.pid";
-   my $pid = eval { local(@ARGV, $/) = ($pid_file); <>; };
-   chomp $pid;
-
-   kill 15, $pid;
-}
-
-sub status {
-   my ($class) = @_;
-
-   my ($name, $path) = ($class->get_name, $class->get_path);
-   my $pid_file = "$path/run/$name.pid";
-   if(-f $pid_file) { return 1; }
-}
-
 
 
 1;
