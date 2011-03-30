@@ -9,7 +9,7 @@ package ServerControl::Module::Memcached;
 use strict;
 use warnings;
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 
 use ServerControl::Module;
 use ServerControl::Commons::Process;
@@ -25,7 +25,7 @@ __PACKAGE__->Parameter(
 __PACKAGE__->Directories(
    bin      => { chmod => 0755, user => 'root', group => 'root' },
    conf     => { chmod => 0700, user => 'root', group => 'root' },
-   run      => { chmod => 0755, user =>  'root', group => 'root' },
+   run      => { chmod => 0755, user =>  ServerControl::Args->get->{'user'}, group => 'root' },
 );
 
 __PACKAGE__->Files(
@@ -40,7 +40,7 @@ sub help {
    printf "  %-30s%s\n", "--name=", "Instance Name";
    printf "  %-30s%s\n", "--path=", "The path where the instance should be created";
    print "\n";
-   printf "  %-30s%s\n", "--user=", "Apache User";
+   printf "  %-30s%s\n", "--user=", "Memcache User";
    printf "  %-30s%s\n", "--ip=", "Listen IP";
    printf "  %-30s%s\n", "--port=", "Listen Port";
    print "\n";
@@ -67,8 +67,9 @@ sub start {
    my $large_memory     = ServerControl::Args->get->{'try-large-memory'}?"-L":"";
    my $threads          = ServerControl::Args->get->{'threads'}?"-t " . ServerControl::Args->get->{'threads'} : "";
    my $backlog          = ServerControl::Args->get->{'backlog'}?"-b " . ServerControl::Args->get->{'backlog'} : "";
+   my $memcache_user    = ServerControl::Args->get->{'user'}?"-u " . ServerControl::Args->get->{'user'} : "";
 
-   spawn("$path/bin/memcached-$name -d -p $port -l $ip $max_mem_for_item -P $pid_file $large_memory $threads -b $backlog");
+   spawn("$path/bin/memcached-$name -d -p $port -l $ip $max_mem_for_item -P $pid_file $large_memory $threads -b $backlog $memcache_user");
 }
 
 
