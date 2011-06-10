@@ -9,7 +9,7 @@ package ServerControl::Module::Memcached;
 use strict;
 use warnings;
 
-our $VERSION = '0.91';
+our $VERSION = '0.93';
 
 use ServerControl::Module;
 use ServerControl::Commons::Process;
@@ -20,16 +20,6 @@ __PACKAGE__->Implements( qw(ServerControl::Module::PidFile) );
 
 __PACKAGE__->Parameter(
    help  => { isa => 'bool', call => sub { __PACKAGE__->help; } },
-);
-
-__PACKAGE__->Directories(
-   bin      => { chmod => 0755, user => 'root', group => 'root' },
-   conf     => { chmod => 0700, user => 'root', group => 'root' },
-   run      => { chmod => 0755, user =>  ServerControl::Args->get->{'user'}, group => 'root' },
-);
-
-__PACKAGE__->Files(
-   'bin/memcached-' . __PACKAGE__->get_name  => { link => ServerControl::Schema->get('memcached') },
 );
 
 sub help {
@@ -58,18 +48,22 @@ sub help {
 sub start {
    my ($class) = @_;
 
+   my $pid_dir     = ServerControl::FsLayout->get_directory("Runtime", "pid");
+
    my ($name, $path)    = ($class->get_name, $class->get_path);
    my $port             = ServerControl::Args->get->{'port'};
    my $ip               = ServerControl::Args->get->{'ip'};
    my $user             = ServerControl::Args->get->{'user'};
    my $max_mem_for_item = ServerControl::Args->get->{'max-memory-for-items'}?"-m " . ServerControl::Args->get->{'max-memory-for-items'} : "";
-   my $pid_file         = "$path/run/$name.pid";
+   my $pid_file         = "$path/$pid_dir/$name.pid";
    my $large_memory     = ServerControl::Args->get->{'try-large-memory'}?"-L":"";
    my $threads          = ServerControl::Args->get->{'threads'}?"-t " . ServerControl::Args->get->{'threads'} : "";
    my $backlog          = ServerControl::Args->get->{'backlog'}?"-b " . ServerControl::Args->get->{'backlog'} : "";
    my $memcache_user    = ServerControl::Args->get->{'user'}?"-u " . ServerControl::Args->get->{'user'} : "";
 
-   spawn("$path/bin/memcached-$name -d -p $port -l $ip $max_mem_for_item -P $pid_file $large_memory $threads -b $backlog $memcache_user");
+   my $exec_file   = ServerControl::FsLayout->get_file("Exec", "memcached");
+
+   spawn("$path/$exec_file -d -p $port -l $ip $max_mem_for_item -P $pid_file $large_memory $threads -b $backlog $memcache_user");
 }
 
 
