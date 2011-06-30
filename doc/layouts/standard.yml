@@ -11,10 +11,20 @@ Directories:
          chmod: 755
          user: <%= ServerControl::Args->get->{'user'} %>
          group: root
+   Configuration:
+      conf:
+         name: etc
+         chmod: 755
+         user: <%= ServerControl::Args->get->{'user'} %>
+         group: root
 
 Files:
    Exec:
       memcached:
          name: bin/memcached-<%= __PACKAGE__->get_name %>
          link: <%= ServerControl::Schema->get('memcached') %>
+   Configuration:
+      conf:
+         name: conf/memcache.conf
+         call: <% sub { ServerControl::Template->parse(@_); } %>
 
