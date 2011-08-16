@@ -40,20 +40,18 @@ sub help {
 sub start {
    my ($class) = @_;
 
-   my $pid_dir     = ServerControl::FsLayout->get_directory("Runtime", "pid");
-
+   my $pid_dir          = ServerControl::FsLayout->get_directory("Runtime", "pid");
    my ($name, $path)    = ($class->get_name, $class->get_path);
    my $user             = ServerControl::Args->get->{'user'};
-   my $pid_file         = "$path/$pid_dir/$name.pid";
    my $memcache_user    = ServerControl::Args->get->{'user'}?"-u " . ServerControl::Args->get->{'user'} : "";
 
    my $exec_file   = ServerControl::FsLayout->get_file("Exec", "memcached");
    my $conf_file   = ServerControl::FsLayout->get_file("Configuration", "conf");
 
-   my $params = eval { local(@ARGV, $/) = ($conf_file); <>; };
+   chomp(my @params = grep { ! /^#/ && ! /^$/ && ! /^\s+#/} eval { local(@ARGV) = ($conf_file); <>; });
 
-   spawn("$path/$exec_file $memcache_user $params");
+   spawn("$path/$exec_file $memcache_user " . join(" ", @params));
+
 }
-
 
 1;
